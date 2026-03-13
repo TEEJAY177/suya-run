@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track Your Order — SuyaRun Abraka</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fire: #FF4500;
+    --ember: #FF8C00;
+    --gold: #FFD700;
+    --smoke: #1A1008;
+    --char: #2C1A0E;
+    --ash: #8B6E52;
+    --cream: #FFF8F0;
+    --green: #00C864;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--smoke);
+    color: var(--cream);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: rgba(26,16,8,0.95);
+    border-bottom: 1px solid rgba(255,69,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--fire);
+    text-decoration: none;
+  }
+  .logo span { color: var(--gold); }
+
+  .back-btn {
+    background: rgba(255,69,0,0.15);
+    border: 1px solid rgba(255,69,0,0.3);
+    color: var(--cream);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .page {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* SEARCH BOX */
+  .search-section {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .search-section h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 3px;
+    color: var(--cream);
+    margin-bottom: 0.3rem;
+  }
+
+  .search-section h1 span { color: var(--fire); }
+
+  .search-section p {
+    color: var(--ash);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-box {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .search-box input {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,69,0,0.3);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    color: var(--cream);
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .search-box input:focus { border-color: var(--fire); }
+  .search-box input::placeholder { color: var(--ash); font-size: 0.8rem; letter-spacing: 1px; text-transform: none; }
+
+  .search-btn {
+    background: var(--fire);
+    color: white;
+    border: none;
+    padding: 0.85rem 1.2rem;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .search-btn:hover { background: var(--ember); }
+
+  /* TRACKER CARD */
+  .tracker-card {
+    background: var(--char);
+    border: 1px solid rgba(255,69,0,0.2);
+    border-radius: 16px;
+    padding: 1.8rem;
+    display: none;
+  }
+
+  .tracker-card.visible { display: block; }
+
+  .order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .order-id-display {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--fire);
+  }
+
+  .order-time {
+    font-size: 0.78rem;
+    color: var(--ash);
+  }
+
+  /* STEPS */
+  .steps {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative;
+    padding-bottom: 1.8rem;
+  }
+
+  .step:last-child { padding-bottom: 0; }
+
+  /* Vertical line */
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% - 20px);
+    background: rgba(255,255,255,0.08);
+  }
+
+  .step.done:not(:last-child)::after {
+    background: var(--green);
+  }
+
+  .step.active:not(:last-child)::after {
+    background: linear-gradient(to bottom, var(--fire), rgba(255,255,255,0.08));
+  }
+
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    position: relative;
+    z-index: 1;
+    transition: all 0.5s;
+  }
+
+  .step.done .step-icon {
+    background: rgba(0,200,100,0.15);
+    border-color: var(--green);
+  }
+
+  .step.active .step-icon {
+    background: rgba(255,69,0,0.2);
+    border-color: var(--fire);
+    box-shadow: 0 0 16px rgba(255,69,0,0.4);
+    animation: pulse-step 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-step {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,69,0,0.3); }
+    50% { box-shadow: 0 0 24px rgba(255,69,0,0.7); }
+  }
+
+  .step-body { flex: 1; padding-top: 0.3rem; }
+
+  .step-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+    color: rgba(255,248,240,0.4);
+    transition: color 0.3s;
+  }
+
+  .step.done .step-title { color: var(--green); }
+  .step.active .step-title { color: var(--cream); }
+
+  .step-desc {
+    font-size: 0.8rem;
+    color: var(--ash);
+    line-height: 1.4;
+  }
+
+  .step.active .step-desc { color: rgba(255,248,240,0.6); }
+
+  .step-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--fire);
+    margin-top: 0.3rem;
+  }
+
+  /* ETA BAR */
+  .eta-bar {
+    background: rgba(255,215,0,0.07);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .eta-icon { font-size: 1.8rem; }
+
+  .eta-text h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gold);
+  }
+
+  .eta-text p {
+    font-size: 0.78rem;
+    color: var(--ash);
+  }
+
+  /* ORDER SUMMARY */
+  .order-summary {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 1.2rem;
+  }
+
+  .summary-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 0.8rem;
+  }
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    padding: 0.3rem 0;
+    color: rgba(255,248,240,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .summary-item.total {
+    font-weight: 700;
+    color: var(--cream);
+    font-size: 1rem;
+    border-bottom: none;
+    margin-top: 0.3rem;
+  }
+
+  .summary-item .price { font-family: 'Space Mono', monospace; color: var(--gold); }
+
+  /* ADMIN PANEL */
+  .admin-section {
+    margin-top: 3rem;
+    background: rgba(255,69,0,0.05);
+    border: 1px solid rgba(255,69,0,0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+
+  .admin-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--fire);
+    letter-spacing: 2px;
+    margin-bottom: 0.3rem;
+  }
+
+  .admin-section p {
+    font-size: 0.8rem;
+    color: var(--ash);
+    margin-bottom: 1.2rem;
+  }
+
+  .admin-login {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-login input {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,69,0,0.2);
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    color: var(--cream);
+    font-family: 'Syne', sans-serif;
+    outline: none;
+    font-size: 0.9rem;
+  }
+
+  .admin-login input:focus { border-color: var(--fire); }
+
+  .admin-panel { display: none; }
+  .admin-panel.visible { display: block; }
+
+  .order-list { display: flex; flex-direction: column; gap: 0.8rem; }
+
+  .order-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .order-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .order-item-id {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--fire);
+  }
+
+  .order-item-customer {
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .order-item-area {
+    font-size: 0.8rem;
+    color: var(--ash);
+    margin-bottom: 0.8rem;
+  }
+
+  .status-buttons {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .status-btn {
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .status-btn.s0 { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: var(--ash); }
+  .status-btn.s1 { background: rgba(255,140,0,0.15); border-color: var(--ember); color: var(--ember); }
+  .status-btn.s2 { background: rgba(255,69,0,0.15); border-color: var(--fire); color: var(--fire); }
+  .status-btn.s3 { background: rgba(255,215,0,0.15); border-color: var(--gold); color: var(--gold); }
+  .status-btn.s4 { background: rgba(0,200,100,0.15); border-color: var(--green); color: var(--green); }
+
+  .status-btn.active { opacity: 1; transform: scale(1.05); }
+  .status-btn:not(.active) { opacity: 0.5; }
+
+  .no-orders {
+    text-align: center;
+    color: var(--ash);
+    font-size: 0.9rem;
+    padding: 1rem 0;
+  }
+
+  /* NOT FOUND */
+  .not-found {
+    text-align: center;
+    padding: 2rem 0;
+    display: none;
+  }
+  .not-found.visible { display: block; }
+  .not-found .icon { font-size: 3rem; margin-bottom: 0.8rem; }
+  .not-found h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--fire); }
+  .not-found p { font-size: 0.85rem; color: var(--ash); margin-top: 0.3rem; }
+
+  /* DEMO badge */
+  .demo-note {
+    background: rgba(255,215,0,0.08);
+    border: 1px solid rgba(255,215,0,0.2);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="suya-abraka.html" class="logo">Suya<span>Run</span></a>
+  <a href="suya-abraka.html" class="back-btn">← Back to Menu</a>
+</nav>
+
+<div class="page">
+
+  <!-- SEARCH -->
+  <div class="search-section">
+    <h1>Track Your <span>Order</span></h1>
+    <p>Enter your Order ID to see live status updates</p>
+    <div class="search-box">
+      <input type="text" id="orderInput" placeholder="e.g. SR-547589" maxlength="12" />
+      <button class="search-btn" onclick="trackOrder()">🔍 Track</button>
+    </div>
+  </div>
+
+  <!-- NOT FOUND -->
+  <div class="not-found" id="notFound">
+    <div class="icon">🔍</div>
+    <h3>Order Not Found</h3>
+    <p>Check your Order ID and try again.<br>It was sent to you on WhatsApp when you ordered.</p>
+  </div>
+
+  <!-- TRACKER CARD -->
+  <div class="tracker-card" id="trackerCard">
+
+    <div class="order-header">
+      <div class="order-id-display" id="displayId"></div>
+      <div class="order-time" id="displayTime"></div>
+    </div>
+
+    <div class="eta-bar" id="etaBar">
+      <div class="eta-icon">🏍️</div>
+      <div class="eta-text">
+        <h4 id="etaTitle">Estimated Delivery: 20–40 mins</h4>
+        <p id="etaDesc">Your suya is on its way!</p>
+      </div>
+    </div>
+
+    <div class="steps" id="stepsContainer">
+      <div class="step" id="step0">
+        <div class="step-icon">📋</div>
+        <div class="step-body">
+          <div class="step-title">Order Received</div>
+          <div class="step-desc">Your order has been placed and sent to the suya spot.</div>
+          <div class="step-time" id="time0"></div>
+        </div>
+      </div>
+      <div class="step" id="step1">
+        <div class="step-icon">🔥</div>
+        <div class="step-body">
+          <div class="step-title">Being Grilled</div>
+          <div class="step-desc">The mallam is grilling your suya fresh on the charcoal.</div>
+          <div class="step-time" id="time1"></div>
+        </div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-icon">🏍️</div>
+        <div class="step-body">
+          <div class="step-title">Rider Dispatched</div>
+          <div class="step-desc">Your suya is packed and the dispatch rider is on the way.</div>
+          <div class="step-time" id="time2"></div>
+        </div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-icon">📍</div>
+        <div class="step-body">
+          <div class="step-title">Almost There</div>
+          <div class="step-desc">Rider is close to your location. Please be available.</div>
+          <div class="step-time" id="time3"></div>
+        </div>
+      </div>
+      <div class="step" id="step4">
+        <div class="step-icon">✅</div>
+        <div class="step-body">
+          <div class="step-title">Delivered!</div>
+          <div class="step-desc">Enjoy your suya! Thank you for ordering with SuyaRun 🔥</div>
+          <div class="step-time" id="time4"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-summary" id="orderSummary"></div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div class="admin-section">
+    <h2>🔑 Admin Panel</h2>
+    <p>Only for SuyaRun staff — update order status here</p>
+    <div class="admin-login" id="adminLogin">
+      <input type="password" id="adminPass" placeholder="Enter admin password" />
+      <button class="search-btn" onclick="adminLogin()">Login</button>
+    </div>
+    <div class="admin-panel" id="adminPanel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-size:0.8rem;color:var(--ash)">Active Orders</div>
+        <button class="search-btn" style="padding:0.4rem 0.8rem;font-size:0.8rem" onclick="clearDelivered()">Clear Delivered</button>
+      </div>
+      <div class="order-list" id="orderList">
+        <div class="no-orders">No orders yet. Orders will appear here when customers place them.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =====================
+// STORAGE HELPERS
+// =====================
+function getOrders() {
+  try { return JSON.parse(localStorage.getItem('suyarun_orders') || '{}'); } catch { return {}; }
+}
+
+function saveOrders(orders) {
+  localStorage.setItem('suyarun_orders', JSON.stringify(orders));
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' });
+}
+
+// =====================
+// TRACK ORDER
+// =====================
+function trackOrder() {
+  const raw = document.getElementById('orderInput').value.trim().toUpperCase();
+  const id = raw.startsWith('SR-') ? raw : 'SR-' + raw.replace('SR', '');
+  const orders = getOrders();
+  const order = orders[id];
+
+  document.getElementById('trackerCard').classList.remove('visible');
+  document.getElementById('notFound').classList.remove('visible');
+
+  if (!order) {
+    document.getElementById('notFound').classList.add('visible');
+    return;
+  }
+
+  renderTracker(id, order);
+  document.getElementById('trackerCard').classList.add('visible');
+}
+
+function renderTracker(id, order) {
+  document.getElementById('displayId').textContent = id;
+  document.getElementById('displayTime').textContent = 'Placed at ' + formatTime(order.placedAt);
+
+  const statusMessages = [
+    { title: 'Hang tight!', desc: 'Order confirmed. Preparing your suya now.' },
+    { title: '🔥 Grilling in progress...', desc: 'Fresh suya on the charcoal. ~15 mins.' },
+    { title: '🏍️ Rider is on the way!', desc: 'Estimated arrival: 10–20 minutes.' },
+    { title: '📍 Almost there!', desc: 'Rider is near your location. Be ready!' },
+    { title: '✅ Delivered! Enjoy!', desc: 'Thank you for ordering with SuyaRun 🔥' },
+  ];
+
+  const etaBar = document.getElementById('etaBar');
+  const s = order.status || 0;
+  document.getElementById('etaTitle').textContent = statusMessages[s].title;
+  document.getElementById('etaDesc').textContent = statusMessages[s].desc;
+
+  if (s === 4) {
+    etaBar.style.background = 'rgba(0,200,100,0.07)';
+    etaBar.style.borderColor = 'rgba(0,200,100,0.3)';
+    document.getElementById('etaBar').querySelector('.eta-icon').textContent = '✅';
+  }
+
+  // Render steps
+  for (let i = 0; i <= 4; i++) {
+    const stepEl = document.getElementById('step' + i);
+    stepEl.classList.remove('done', 'active');
+    if (i < s) stepEl.classList.add('done');
+    else if (i === s) stepEl.classList.add('active');
+
+    const timeEl = document.getElementById('time' + i);
+    timeEl.textContent = order.times && order.times[i] ? formatTime(order.times[i]) : '';
+  }
+
+  // Summary
+  const summaryEl = document.getElementById('orderSummary');
+  if (order.items && order.items.length > 0) {
+    const subtotal = order.items.reduce((s, i) => s + i.price * i.qty, 0);
+    const total = subtotal + 500;
+    summaryEl.innerHTML = `
+      <div class="summary-title">Order Summary</div>
+      ${order.items.map(i => `
+        <div class="summary-item">
+          <span>${i.emoji} ${i.qty}x ${i.name}</span>
+          <span class="price">₦${(i.price * i.qty).toLocaleString()}</span>
+        </div>
+      `).join('')}
+      <div class="summary-item"><span>Delivery</span><span class="price" style="color:var(--ash)">₦500</span></div>
+      <div class="summary-item total"><span>Total</span><span class="price">₦${total.toLocaleString()}</span></div>
+    `;
+  }
+}
+
+// =====================
+// ADMIN
+// =====================
+const ADMIN_PASSWORD = 'suya2025'; // Change this to your own password
+
+function adminLogin() {
+  const pass = document.getElementById('adminPass').value;
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('visible');
+    renderAdminOrders();
+  } else {
+    alert('Wrong password!');
+  }
+}
+
+function renderAdminOrders() {
+  const orders = getOrders();
+  const list = document.getElementById('orderList');
+  const keys = Object.keys(orders).reverse();
+
+  if (keys.length === 0) {
+    list.innerHTML = '<div class="no-orders">No orders yet. Orders will appear here when customers place them.</div>';
+    return;
+  }
+
+  const statusLabels = ['📋 Received', '🔥 Grilling', '🏍️ Dispatched', '📍 Almost There', '✅ Delivered'];
+
+  list.innerHTML = keys.map(id => {
+    const o = orders[id];
+    const s = o.status || 0;
+    return `
+      <div class="order-item">
+        <div class="order-item-header">
+          <span class="order-item-id">${id}</span>
+          <span style="font-size:0.75rem;color:var(--gold);font-family:'Space Mono',monospace">${formatTime(o.placedAt)}</span>
+        </div>
+        <div class="order-item-customer">👤 ${o.customer} · 📞 ${o.phone}</div>
+        <div class="order-item-area">📍 ${o.area} — ${o.address}</div>
+        <div class="status-buttons">
+          ${statusLabels.map((label, i) => `
+            <button class="status-btn s${i} ${s === i ? 'active' : ''}" onclick="updateStatus('${id}', ${i})">${label}</button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateStatus(id, newStatus) {
+  const orders = getOrders();
+  if (!orders[id]) return;
+  orders[id].status = newStatus;
+  if (!orders[id].times) orders[id].times = {};
+  orders[id].times[newStatus] = Date.now();
+  saveOrders(orders);
+  renderAdminOrders();
+}
+
+function clearDelivered() {
+  const orders = getOrders();
+  Object.keys(orders).forEach(id => {
+    if (orders[id].status === 4) delete orders[id];
+  });
+  saveOrders(orders);
+  renderAdminOrders();
+}
+
+// Auto-load order ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const urlId = urlParams.get('id');
+if (urlId) {
+  document.getElementById('orderInput').value = urlId;
+  trackOrder();
+}
+
+// Allow Enter key for tracking
+document.getElementById('orderInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') trackOrder();
+});
+document.getElementById('adminPass') && document.getElementById('adminPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminLogin();
+});
+
+// Auto-refresh tracker every 15 seconds if visible
+setInterval(() => {
+  const card = document.getElementById('trackerCard');
+  if (card.classList.contains('visible')) {
+    const id = document.getElementById('displayId').textContent;
+    const orders = getOrders();
+    if (orders[id]) renderTracker(id, orders[id]);
+  }
+}, 15000);
+</script>
+</body>
+</html>
